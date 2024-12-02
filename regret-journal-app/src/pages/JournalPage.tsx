@@ -1,259 +1,256 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useUserStore } from '@/store';
-import { confessionService } from '@/services/api';
-import { useGeolocation } from '@/hooks/useGeolocation';
+import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  MdEmojiEmotions, 
+  MdSentimentVerySatisfied, 
+  MdSentimentDissatisfied, 
+  MdSentimentNeutral,
+  MdAdd,
+  MdDelete,
+  MdEdit,
+  MdSave
+} from 'react-icons/md';
+import { FaSparkles, FaTrashAlt, FaMagic } from 'react-icons/fa';
 
-interface Emotion {
-  value: string;
-  label: string;
-  emoji: string;
-}
+// Playful Mood Emojis
+const MOOD_EMOJIS = {
+  'amazing': '🔥',
+  'good': '😊',
+  'okay': '🫤',
+  'meh': '😴',
+  'bad': '😭',
+  'chaotic': '🌪️'
+};
 
-const EMOTIONS: Emotion[] = [
-  { value: 'regret', label: 'Regret', emoji: '😔' },
-  { value: 'sadness', label: 'Sadness', emoji: '😢' },
-  { value: 'anger', label: 'Anger', emoji: '😠' },
-  { value: 'fear', label: 'Fear', emoji: '😨' },
-  { value: 'hope', label: 'Hope', emoji: '🌟' },
-  { value: 'joy', label: 'Joy', emoji: '😊' },
-  { value: 'guilt', label: 'Guilt', emoji: '😳' },
-  { value: 'relief', label: 'Relief', emoji: '😌' }
+// Gen Z Slang Generator
+const SLANG_GENERATOR = [
+  "no cap, journal time 💅",
+  "vibes check incoming 🌈",
+  "spilling tea with myself 🫖",
+  "main character energy activated ✨",
+  "emotional support journal loading... 🚀"
 ];
 
+// Random Background Gradients
+const BACKGROUND_GRADIENTS = [
+  'from-pink-500 via-red-500 to-yellow-500',
+  'from-purple-500 via-blue-500 to-pink-500',
+  'from-green-400 via-cyan-500 to-blue-600',
+  'from-orange-400 via-red-500 to-pink-500'
+];
+
+interface JournalEntry {
+  id: string;
+  content: string;
+  mood: keyof typeof MOOD_EMOJIS;
+  timestamp: number;
+  isEditing?: boolean;
+}
+
 const JournalPage: React.FC = () => {
-  const [content, setContent] = useState<string>('');
-  const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
-  const [anonymityLevel, setAnonymityLevel] = useState<string>('full');
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
-  
-  // Voice recording states
-  const [isRecording, setIsRecording] = useState<boolean>(false);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [newEntry, setNewEntry] = useState('');
+  const [currentMood, setCurrentMood] = useState<keyof typeof MOOD_EMOJIS>('okay');
+  const [backgroundGradient, setBackgroundGradient] = useState(BACKGROUND_GRADIENTS[0]);
 
-  const { latitude, longitude } = useGeolocation();
-  const { user } = useUserStore();
+  // Randomize background on page load
+  useEffect(() => {
+    const randomGradient = BACKGROUND_GRADIENTS[Math.floor(Math.random() * BACKGROUND_GRADIENTS.length)];
+    setBackgroundGradient(randomGradient);
+  }, []);
 
-  const handleEmotionToggle = (emotion: string) => {
-    setSelectedEmotions(prev => 
-      prev.includes(emotion) 
-        ? prev.filter(e => e !== emotion)
-        : [...prev, emotion]
-    );
+  // Slang Generator
+  const getRandomSlang = () => {
+    return SLANG_GENERATOR[Math.floor(Math.random() * SLANG_GENERATOR.length)];
   };
 
-  const startVoiceRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      audioChunksRef.current = [];
-
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
+  // Add Journal Entry
+  const addEntry = () => {
+    if (newEntry.trim()) {
+      const entry: JournalEntry = {
+        id: `entry-${Date.now()}`,
+        content: newEntry,
+        mood: currentMood,
+        timestamp: Date.now()
       };
-
-      mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        setAudioBlob(audioBlob);
-      };
-
-      mediaRecorderRef.current.start();
-      setIsRecording(true);
-    } catch (error) {
-      console.error('Voice recording error:', error);
-      setSubmitMessage('Failed to start voice recording. Please check microphone permissions.');
+      setEntries([entry, ...entries]);
+      setNewEntry('');
     }
   };
 
-  const stopVoiceRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
+  // Delete Entry
+  const deleteEntry = (id: string) => {
+    setEntries(entries.filter(entry => entry.id !== id));
   };
 
-  const handleVoiceSubmit = async () => {
-    if (!audioBlob) {
-      setSubmitMessage('No audio recorded');
-      return;
-    }
-
-    // Convert audio blob to base64 or upload to cloud storage
-    const reader = new FileReader();
-    reader.readAsDataURL(audioBlob);
-    reader.onloadend = async () => {
-      const base64Audio = reader.result as string;
-
-      try {
-        setIsSubmitting(true);
-        const response = await confessionService.create({
-          content: base64Audio,
-          emotions: selectedEmotions,
-          anonymityLevel,
-          location: { 
-            latitude: latitude || undefined, 
-            longitude: longitude || undefined 
-          },
-          isPublic: true,
-          contentType: 'audio'
-        });
-
-        setContent('');
-        setSelectedEmotions([]);
-        setAudioBlob(null);
-        setSubmitMessage('Voice confession submitted successfully! 🎙️');
-      } catch (error) {
-        console.error('Voice submission error:', error);
-        setSubmitMessage('Failed to submit voice confession. Please try again.');
-      } finally {
-        setIsSubmitting(false);
-      }
-    };
+  // Edit Entry
+  const startEditingEntry = (id: string) => {
+    setEntries(entries.map(entry => 
+      entry.id === id ? { ...entry, isEditing: true } : entry
+    ));
   };
 
-  const handleTextSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!content.trim()) {
-      setSubmitMessage('Please enter your confession');
-      return;
-    }
-
-    setIsSubmitting(true);
-    setSubmitMessage(null);
-
-    try {
-      const response = await confessionService.create({
-        content,
-        emotions: selectedEmotions,
-        anonymityLevel,
-        location: { 
-          latitude: latitude || undefined, 
-          longitude: longitude || undefined 
-        },
-        isPublic: true,
-        contentType: 'text'
-      });
-
-      setContent('');
-      setSelectedEmotions([]);
-      setSubmitMessage('Confession submitted successfully! 🌈');
-    } catch (error) {
-      console.error('Submission error:', error);
-      setSubmitMessage('Failed to submit confession. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+  // Save Edited Entry
+  const saveEditedEntry = (id: string, newContent: string) => {
+    setEntries(entries.map(entry => 
+      entry.id === id 
+        ? { ...entry, content: newContent, isEditing: false } 
+        : entry
+    ));
   };
+
+  // Filtered and Sorted Entries
+  const sortedEntries = useMemo(() => {
+    return [...entries].sort((a, b) => b.timestamp - a.timestamp);
+  }, [entries]);
 
   return (
-    <div className="journal-page">
-      <h1>Share Your Emotional Journey 🌈</h1>
-      
-      <div className="submission-tabs">
-        <div className="tab text-tab">
-          <h2>Text Confession</h2>
-          <form onSubmit={handleTextSubmit} className="journal-form">
-            <textarea 
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Write your confession here..."
-              maxLength={1000}
-              rows={6}
-              required
-            />
-
-            <div className="emotion-selector">
-              <h3>Select Emotions</h3>
-              <div className="emotion-grid">
-                {EMOTIONS.map(emotion => (
-                  <button
-                    key={emotion.value}
-                    type="button"
-                    onClick={() => handleEmotionToggle(emotion.value)}
-                    className={`emotion-button ${
-                      selectedEmotions.includes(emotion.value) ? 'selected' : ''
-                    }`}
-                  >
-                    {emotion.emoji} {emotion.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="anonymity-selector">
-              <h3>Anonymity Level</h3>
-              <select 
-                value={anonymityLevel}
-                onChange={(e) => setAnonymityLevel(e.target.value)}
-              >
-                <option value="full">Completely Anonymous</option>
-                <option value="location">Show Location</option>
-                {user && <option value="username">Show Username</option>}
-              </select>
-            </div>
-
-            <button 
-              type="submit" 
-              disabled={isSubmitting || !content.trim()}
-              className="submit-button"
-            >
-              {isSubmitting ? 'Submitting Text...' : 'Submit Text Confession'}
-            </button>
-          </form>
-        </div>
-
-        <div className="tab voice-tab">
-          <h2>Voice Confession</h2>
-          <div className="voice-recorder">
-            {!isRecording ? (
-              <button 
-                onClick={startVoiceRecording}
-                className="start-recording-button"
-              >
-                🎙️ Start Recording
-              </button>
-            ) : (
-              <button 
-                onClick={stopVoiceRecording}
-                className="stop-recording-button"
-              >
-                ⏹️ Stop Recording
-              </button>
-            )}
-
-            {audioBlob && (
-              <div className="audio-preview">
-                <audio 
-                  src={URL.createObjectURL(audioBlob)} 
-                  controls 
-                  className="audio-player"
-                />
-                <button 
-                  onClick={handleVoiceSubmit}
-                  disabled={isSubmitting}
-                  className="submit-voice-button"
-                >
-                  {isSubmitting ? 'Submitting Voice...' : 'Submit Voice Confession'}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className={`min-h-screen bg-gradient-to-br ${backgroundGradient} text-white relative overflow-hidden p-4`}
+    >
+      {/* Chaotic Background Elements */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
+        <div className="absolute -top-1/4 -right-1/4 w-[600px] h-[600px] bg-white/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-1/4 -left-1/4 w-[500px] h-[500px] bg-white/10 rounded-full blur-3xl animate-pulse delay-500" />
       </div>
 
-      {submitMessage && (
-        <div className={`submit-message ${
-          submitMessage.includes('successfully') ? 'success' : 'error'
-        }`}>
-          {submitMessage}
-        </div>
-      )}
-    </div>
+      <div className="relative z-10 max-w-4xl mx-auto">
+        {/* Header with Playful Slang */}
+        <motion.header 
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="text-center mb-10"
+        >
+          <h1 className="text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white via-white/80 to-white/60">
+            emotional archive 🤫
+          </h1>
+          <p className="text-xl text-white/80 italic flex items-center justify-center gap-2">
+            <FaSparkles className="text-yellow-300" />
+            {getRandomSlang()}
+            <FaSparkles className="text-yellow-300" />
+          </p>
+        </motion.header>
+
+        {/* Mood and Entry Input */}
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-10"
+        >
+          {/* Mood Selector */}
+          <div className="flex justify-center space-x-4 mb-6">
+            {(Object.keys(MOOD_EMOJIS) as Array<keyof typeof MOOD_EMOJIS>).map(mood => (
+              <motion.button
+                key={mood}
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setCurrentMood(mood)}
+                className={`
+                  text-4xl p-2 rounded-full transition-all 
+                  ${currentMood === mood 
+                    ? 'bg-white/20 ring-2 ring-white/50' 
+                    : 'hover:bg-white/10'}
+                `}
+              >
+                {MOOD_EMOJIS[mood]}
+              </motion.button>
+            ))}
+          </div>
+
+          {/* Entry Input */}
+          <div className="flex items-center space-x-4">
+            <textarea
+              value={newEntry}
+              onChange={(e) => setNewEntry(e.target.value)}
+              placeholder="what's on your mind? spill the tea... 🫖"
+              className="w-full bg-black/20 text-white p-4 rounded-xl focus:ring-2 focus:ring-white/50 outline-none resize-none h-32"
+            />
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={addEntry}
+              className="bg-white/20 p-4 rounded-xl hover:bg-white/30 transition-all"
+            >
+              <MdAdd className="text-3xl" />
+            </motion.button>
+          </div>
+        </motion.div>
+
+        {/* Entries List */}
+        <AnimatePresence>
+          {sortedEntries.map((entry) => (
+            <motion.div
+              key={entry.id}
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-4 relative group"
+            >
+              {/* Mood Emoji */}
+              <div className="absolute top-4 right-4 text-4xl">
+                {MOOD_EMOJIS[entry.mood]}
+              </div>
+
+              {/* Entry Content */}
+              {entry.isEditing ? (
+                <div className="flex space-x-4">
+                  <textarea
+                    defaultValue={entry.content}
+                    className="w-full bg-black/20 text-white p-2 rounded-xl"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        saveEditedEntry(entry.id, (e.target as HTMLTextAreaElement).value);
+                      }
+                    }}
+                  />
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => saveEditedEntry(entry.id, 
+                      (document.querySelector(`textarea[defaultValue="${entry.content}"]`) as HTMLTextAreaElement).value
+                    )}
+                    className="bg-green-500/20 p-2 rounded-xl hover:bg-green-500/30"
+                  >
+                    <MdSave className="text-green-300" />
+                  </motion.button>
+                </div>
+              ) : (
+                <p className="text-white/90 mb-4">{entry.content}</p>
+              )}
+
+              {/* Entry Actions */}
+              <div className="flex justify-between items-center mt-4">
+                <span className="text-xs text-white/50">
+                  {new Date(entry.timestamp).toLocaleString()}
+                </span>
+                <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => startEditingEntry(entry.id)}
+                    className="bg-blue-500/20 p-2 rounded-xl hover:bg-blue-500/30"
+                  >
+                    <MdEdit className="text-blue-300" />
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => deleteEntry(entry.id)}
+                    className="bg-red-500/20 p-2 rounded-xl hover:bg-red-500/30"
+                  >
+                    <FaTrashAlt className="text-red-300" />
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+    </motion.div>
   );
 };
 

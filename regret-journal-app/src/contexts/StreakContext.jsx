@@ -1,4 +1,21 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { 
+  FaFire, 
+  FaGem, 
+  FaTrophy, 
+  FaStar, 
+  FaLevelUpAlt 
+} from 'react-icons/fa';
+
+// Streak Levels and Rewards
+const STREAK_LEVELS = [
+  { level: 1, name: 'Emotional Novice', minStreak: 0, icon: FaStar },
+  { level: 2, name: 'Feeling Finder', minStreak: 3, icon: FaGem },
+  { level: 3, name: 'Emotion Explorer', minStreak: 7, icon: FaTrophy },
+  { level: 4, name: 'Vibe Master', minStreak: 14, icon: FaLevelUpAlt },
+  { level: 5, name: 'Emotional Guru', minStreak: 30, icon: FaFire }
+];
 
 // Create the Streak Context
 const StreakContext = createContext(null);
@@ -14,12 +31,16 @@ export const StreakProvider = ({ children }) => {
           regret: { 
             count: 0, 
             lastEntryDate: null,
-            consecutiveDays: 0
+            consecutiveDays: 0,
+            level: 1,
+            totalPoints: 0
           },
           feelingFine: { 
             count: 0, 
             lastEntryDate: null,
-            consecutiveDays: 0
+            consecutiveDays: 0,
+            level: 1,
+            totalPoints: 0
           }
         };
   });
@@ -28,6 +49,14 @@ export const StreakProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('emotionalStreaks', JSON.stringify(streaks));
   }, [streaks]);
+
+  // Method to calculate streak level
+  const calculateStreakLevel = (consecutiveDays) => {
+    const level = STREAK_LEVELS.reduce((current, levelConfig) => 
+      consecutiveDays >= levelConfig.minStreak ? levelConfig : current
+    , STREAK_LEVELS[0]);
+    return level;
+  };
 
   // Method to update streak
   const updateStreak = (emotion, date = new Date()) => {
@@ -39,14 +68,21 @@ export const StreakProvider = ({ children }) => {
         ? isNextDay(prevStreaks[emotion].lastEntryDate, formattedDate)
         : true;
 
+      const newConsecutiveDays = isConsecutiveDay 
+        ? prevStreaks[emotion].consecutiveDays + 1 
+        : 1;
+
+      const newLevel = calculateStreakLevel(newConsecutiveDays);
+      
       return {
         ...prevStreaks,
         [emotion]: {
           count: prevStreaks[emotion].count + 1,
           lastEntryDate: formattedDate,
-          consecutiveDays: isConsecutiveDay 
-            ? prevStreaks[emotion].consecutiveDays + 1 
-            : 1
+          consecutiveDays: newConsecutiveDays,
+          level: newLevel.level,
+          totalPoints: prevStreaks[emotion].totalPoints + 
+            (isConsecutiveDay ? newConsecutiveDays : 1)
         }
       };
     });
@@ -59,9 +95,42 @@ export const StreakProvider = ({ children }) => {
       [emotion]: { 
         count: 0, 
         lastEntryDate: null,
-        consecutiveDays: 0
+        consecutiveDays: 0,
+        level: 1,
+        totalPoints: 0
       }
     }));
+  };
+
+  // Render Streak Level Component
+  const StreakLevelDisplay = ({ emotion }) => {
+    const currentStreak = streaks[emotion];
+    const currentLevel = STREAK_LEVELS.find(l => l.level === currentStreak.level);
+    const LevelIcon = currentLevel.icon;
+
+    return (
+      <motion.div 
+        className="flex items-center space-x-2 bg-white/10 p-2 rounded-xl"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 300 }}
+      >
+        <LevelIcon 
+          className={`
+            text-2xl 
+            ${emotion === 'regret' ? 'text-red-400' : 'text-green-400'}
+          `} 
+        />
+        <div>
+          <p className="text-sm font-bold text-white">
+            {currentLevel.name}
+          </p>
+          <p className="text-xs text-white/70">
+            Streak: {currentStreak.consecutiveDays} days
+          </p>
+        </div>
+      </motion.div>
+    );
   };
 
   // Helper function to check if a date is the next day
@@ -82,7 +151,9 @@ export const StreakProvider = ({ children }) => {
     <StreakContext.Provider value={{ 
       streaks, 
       updateStreak, 
-      resetStreak 
+      resetStreak,
+      StreakLevelDisplay,
+      STREAK_LEVELS
     }}>
       {children}
     </StreakContext.Provider>
@@ -97,3 +168,5 @@ export const useStreak = () => {
   }
   return context;
 };
+
+export default StreakContext;

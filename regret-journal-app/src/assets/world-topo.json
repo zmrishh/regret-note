@@ -3,8 +3,17 @@
   "objects": {
     "countries": {
       "type": "GeometryCollection",
-      "geometries": []
+      "geometries": [
+        {
+          "type": "Polygon",
+          "properties": {"name": "World"},
+          "arcs": [[0]],
+          "id": "world"
+        }
+      ]
     }
   },
-  "arcs": []
+  "arcs": [
+    [[0, 0], [0, 90], [180, 90], [180, 0], [0, 0]]
+  ]
 }

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { confessionService } from '../../services/api';
+import { HoverBorderGradient } from "../ui/hover-border-gradient";
+import { cn } from '@/lib/utils';
 
 const TextJournalMode = ({ onTextChange, mood }) => {
   const [journalText, setJournalText] = useState('');
@@ -195,17 +197,17 @@ const TextJournalMode = ({ onTextChange, mood }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <button 
+            <HoverBorderGradient
               onClick={handleSubmit}
               disabled={isSubmitting || !journalText.trim()}
-              className={`px-6 py-3 rounded-xl transition-all 
-                ${journalText.trim() 
-                  ? 'bg-accent-orange text-white hover:bg-accent-orange/90' 
-                  : 'bg-white/10 text-white/50 cursor-not-allowed'
-                }`}
+              containerClassName={cn(
+                journalText.trim() 
+                  ? "opacity-100 cursor-pointer" 
+                  : "opacity-50 cursor-not-allowed"
+              )}
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Confession'}
-            </button>
+              {isSubmitting ? "Sharing your thoughts..." : "Share Anonymously"}
+            </HoverBorderGradient>
           </motion.div>
 
           {/* Submit Message */}

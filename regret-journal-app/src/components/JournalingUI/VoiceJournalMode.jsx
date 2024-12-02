@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { confessionService } from '../../services/api';
+import { HoverBorderGradient } from "../ui/hover-border-gradient";
+import { cn } from '@/lib/utils';
 
 const VoiceJournalMode = ({ onTranscriptChange, mood }) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -310,17 +312,17 @@ const VoiceJournalMode = ({ onTranscriptChange, mood }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <button 
+        <HoverBorderGradient
           onClick={handleSubmit}
           disabled={isSubmitting || !transcript.trim()}
-          className={`px-6 py-3 rounded-xl transition-all 
-            ${transcript.trim() 
-              ? 'bg-accent-orange text-white hover:bg-accent-orange/90' 
-              : 'bg-white/10 text-white/50 cursor-not-allowed'
-            }`}
+          containerClassName={cn(
+            transcript.trim() 
+              ? "opacity-100 cursor-pointer" 
+              : "opacity-50 cursor-not-allowed"
+          )}
         >
-          {isSubmitting ? 'Submitting...' : 'Submit Voice Confession'}
-        </button>
+          {isSubmitting ? "Sharing your voice..." : "Share Voice Anonymously"}
+        </HoverBorderGradient>
       </motion.div>
 
       {/* Submit Message */}

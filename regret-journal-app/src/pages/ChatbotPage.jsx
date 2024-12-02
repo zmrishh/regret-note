@@ -1,25 +1,35 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  FaBrain, 
+  FaHeart, 
+  FaMagic, 
+  FaPaperPlane, 
+  FaStar,
+  FaCommentDots,
+  FaRobot
+} from 'react-icons/fa';
+import { MdEmojiEmotions } from 'react-icons/md';
 
-// Simulated bot responses with different personalities
+// Vibrant Gen Z Slang and Vibes Bot Responses
 const botResponses = {
-  supportive: [
-    "I hear you. Your feelings are valid.",
-    "That sounds challenging. Let's work through this together.",
-    "It's brave of you to open up about this.",
-    "Every experience is an opportunity for growth."
+  chaotic: [
+    "no cap, i'm here for your unhinged thoughts 💯",
+    "spill the tea, bestie. i'm all ears 🫖",
+    "main character energy activated 🌟",
+    "we're processing this vibe rn 💁‍♀️"
   ],
-  analytical: [
-    "Let's break down this situation objectively.",
-    "What patterns do you notice in this experience?",
-    "How might this challenge contribute to your personal development?",
-    "What insights can we extract from this moment?"
+  healing: [
+    "ur feelings are valid af 💖",
+    "we're not okay, and that's okay 🤷‍♀️",
+    "sending soft vibes your way 🌈",
+    "you're literally doing amazing, sweetie 💅"
   ],
-  empathetic: [
-    "I can sense this is deeply affecting you.",
-    "Your emotions are a powerful source of wisdom.",
-    "It's okay to feel complex emotions.",
-    "Vulnerability is strength in disguise."
+  real: [
+    "let's get real for a sec 🔍",
+    "unpacking this emotional baggage, go off 🧳",
+    "radical self-awareness incoming 🚀",
+    "emotional intelligence check ✨"
   ]
 };
 
@@ -27,13 +37,13 @@ const ChatbotPage = () => {
   const [messages, setMessages] = useState([
     { 
       id: 1, 
-      text: "Hey there! I'm your AI companion, ready to help you process your thoughts and feelings. What's on your mind today?", 
+      text: "yo! i'm your emotional support ai. what's the tea today? 🫖", 
       sender: "bot",
-      personality: "supportive"
+      personality: "chaotic"
     }
   ]);
   const [input, setInput] = useState('');
-  const [botPersonality, setBotPersonality] = useState("supportive");
+  const [botPersonality, setBotPersonality] = useState("chaotic");
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -81,7 +91,7 @@ const ChatbotPage = () => {
       ...prevMessages, 
       { 
         id: Date.now(), 
-        text: `I've switched to ${personality} mode. How can I help you?`, 
+        text: `switched to ${personality} mode. let's get into it 💁‍♀️`, 
         sender: "bot",
         personality: personality
       }
@@ -95,12 +105,6 @@ const ChatbotPage = () => {
       exit={{ opacity: 0 }}
       className="min-h-[calc(100vh-theme(spacing.20))] relative w-full p-4 flex items-center justify-center"
     >
-      {/* Background Gradient */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-accent-orange/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent-orange/5 rounded-full blur-3xl" />
-      </div>
-
       <div className="relative z-10 w-full max-w-4xl">
         {/* Personality Selector */}
         <motion.div 
@@ -113,6 +117,7 @@ const ChatbotPage = () => {
               key={personality}
               onClick={() => changePersonality(personality)}
               className={`px-4 py-2 rounded-xl text-sm font-subheading 
+                flex items-center gap-2
                 ${botPersonality === personality 
                   ? 'bg-accent-orange text-white' 
                   : 'bg-white/10 hover:bg-white/20 text-white/70'
@@ -120,6 +125,9 @@ const ChatbotPage = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
+              {personality === 'chaotic' && <FaMagic />}
+              {personality === 'healing' && <FaHeart />}
+              {personality === 'real' && <FaBrain />}
               {personality.charAt(0).toUpperCase() + personality.slice(1)} Mode
             </motion.button>
           ))}
@@ -131,6 +139,22 @@ const ChatbotPage = () => {
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
         >
+          {/* Header */}
+          <div className="bg-white/5 p-4 flex items-center justify-between border-b border-white/10">
+            <div className="flex items-center space-x-3">
+              <FaRobot className="text-3xl text-accent-orange" />
+              <h2 className="text-xl font-bold text-white">
+                emotional ai companion
+              </h2>
+            </div>
+            <div className="flex items-center space-x-2">
+              <MdEmojiEmotions className="text-yellow-300 text-2xl animate-bounce" />
+              <span className="text-sm text-white/70">
+                {botPersonality} mode
+              </span>
+            </div>
+          </div>
+
           {/* Messages Area */}
           <div className="h-[500px] overflow-y-auto p-6 space-y-4">
             <AnimatePresence>
@@ -149,12 +173,15 @@ const ChatbotPage = () => {
                         ? 'bg-white/10 text-white' 
                         : 'bg-accent-orange text-black'
                       }
-                      ${message.personality === 'supportive' ? 'border-l-4 border-green-500' 
-                        : message.personality === 'analytical' ? 'border-l-4 border-blue-500' 
-                        : 'border-l-4 border-purple-500'
+                      ${message.personality === 'chaotic' ? 'border-l-4 border-pink-500' 
+                        : message.personality === 'healing' ? 'border-l-4 border-green-500' 
+                        : 'border-l-4 border-blue-500'
                       }
                     `}
                   >
+                    {message.sender === 'bot' && (
+                      <FaStar className="absolute top-1 right-1 text-yellow-300 text-xs animate-pulse" />
+                    )}
                     <p className="text-sm">{message.text}</p>
                   </div>
                 </motion.div>
@@ -171,7 +198,7 @@ const ChatbotPage = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={`Message in ${botPersonality} mode...`}
+                placeholder={`slide into my dms in ${botPersonality} mode...`}
                 className="flex-grow bg-black/20 rounded-xl border border-white/10 p-3 
                            text-white placeholder-white/30 focus:outline-none 
                            focus:ring-2 focus:ring-accent-orange/50 
@@ -179,14 +206,15 @@ const ChatbotPage = () => {
               />
               <motion.button
                 onClick={handleSendMessage}
-                className="px-6 py-3 bg-accent-orange text-black 
+                className="px-4 py-3 bg-accent-orange/10 text-white 
                            rounded-xl font-subheading font-bold
-                           hover:bg-accent-orange/90 
+                           flex items-center gap-2
+                           hover:bg-accent-orange/20 
                            transition-colors"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                Send
+                <FaPaperPlane /> send it
               </motion.button>
             </div>
           </div>

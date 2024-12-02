@@ -1,0 +1,105 @@
+/* Gen Z Theme Styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+:root {
+  /* Color Palette */
+  --color-bg-primary: #121212;
+  --color-bg-secondary: #1E1E1E;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #B0B0B0;
+  --color-accent-orange: #FF5722;
+  --color-accent-orange-light: #FF9800;
+  
+  /* Typography */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  
+  /* Animations */
+  --transition-fast: all 0.2s ease;
+  --transition-medium: all 0.4s ease;
+}
+
+/* Global Gen Z Styles */
+body {
+  font-family: var(--font-primary);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+
+/* Button Styles */
+.gen-z-button {
+  background-color: var(--color-accent-orange);
+  color: var(--color-text-primary);
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-weight: 600;
+  text-transform: lowercase;
+  transition: var(--transition-fast);
+}
+
+.gen-z-button:hover {
+  background-color: var(--color-accent-orange-light);
+  transform: scale(1.05);
+}
+
+/* Input Styles */
+.gen-z-input {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-accent-orange);
+  color: var(--color-text-primary);
+  border-radius: 12px;
+  padding: 12px;
+  transition: var(--transition-medium);
+}
+
+.gen-z-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.3);
+}
+
+/* Card Styles */
+.gen-z-card {
+  background-color: var(--color-bg-secondary);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 87, 34, 0.2);
+  box-shadow: 0 10px 25px rgba(255, 87, 34, 0.1);
+  transition: var(--transition-medium);
+}
+
+.gen-z-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(255, 87, 34, 0.2);
+}
+
+/* Typography */
+.gen-z-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-accent-orange);
+  text-transform: lowercase;
+}
+
+.gen-z-subtitle {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+/* Animations */
+@keyframes gen-z-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes gen-z-wiggle {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+
+.animate-gen-z-pulse {
+  animation: gen-z-pulse 2s infinite;
+}
+
+.animate-gen-z-wiggle {
+  animation: gen-z-wiggle 1s infinite;
+}

@@ -1,148 +1,101 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  FaBolt, 
-  FaStopwatch, 
-  FaTrash, 
-  FaLock, 
-  FaUnlock 
+  FaSkullCrossbones, 
+  FaBrain, 
+  FaRegSadTear, 
+  FaFire 
 } from 'react-icons/fa';
 import { useVentMode } from '../../contexts/VentModeContext';
+import { cn } from '@/lib/utils';
 
 export function VentModeButton() {
   const { 
     isVentModeActive, 
-    timeRemaining, 
     startVentMode, 
     cancelVentMode 
   } = useVentMode();
 
-  const [showOptions, setShowOptions] = useState(false);
-  const [selectedDuration, setSelectedDuration] = useState(10 * 60); // 10 minutes default
-
-  const durationOptions = [
-    { label: '5 mins', value: 5 * 60 },
-    { label: '10 mins', value: 10 * 60 },
-    { label: '15 mins', value: 15 * 60 }
-  ];
-
-  const anonymityOptions = [
-    { label: 'High', value: 'high' },
-    { label: 'Medium', value: 'medium' },
-    { label: 'Low', value: 'low' }
-  ];
-
-  const [selectedAnonymity, setSelectedAnonymity] = useState('high');
-
-  const handleStartVentMode = () => {
-    startVentMode({
-      duration: selectedDuration,
-      selfDestructTime: 24 * 60 * 60, // 24 hours
-      anonymityLevel: selectedAnonymity
-    });
-    setShowOptions(false);
+  const buttonVariants = {
+    initial: { 
+      scale: 1, 
+      rotate: 0,
+      boxShadow: '0 4px 6px rgba(255,87,34,0.1)'
+    },
+    hover: { 
+      scale: 1.1, 
+      rotate: [0, -5, 5, 0],
+      boxShadow: '0 10px 15px rgba(255,87,34,0.2)'
+    },
+    pulse: {
+      scale: [1, 1.05, 1],
+      transition: {
+        duration: 1.5,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }
+    }
   };
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  const getRandomSlangPhrase = () => {
+    const phrases = [
+      "no cap",
+      "spill the tea",
+      "main character energy",
+      "vibes only",
+      "yeet my feelings",
+      "lowkey struggling",
+      "big mood"
+    ];
+    return phrases[Math.floor(Math.random() * phrases.length)];
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
-      <AnimatePresence>
-        {isVentModeActive ? (
-          <motion.div 
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            className="bg-red-500/90 text-white rounded-full p-4 flex items-center space-x-3 shadow-2xl"
-          >
-            <FaStopwatch className="w-6 h-6" />
-            <span className="font-bold text-lg">{formatTime(timeRemaining)}</span>
-            <motion.button
-              onClick={cancelVentMode}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="bg-white/20 p-2 rounded-full"
+    <motion.button
+      initial="initial"
+      whileHover="hover"
+      animate="pulse"
+      variants={buttonVariants}
+      onClick={isVentModeActive ? cancelVentMode : startVentMode}
+      className={cn(
+        "fixed bottom-8 right-8 z-50 rounded-full p-5 shadow-gen-z transition-all duration-300 ease-in-out group",
+        isVentModeActive 
+          ? "bg-brand-orange-500 text-brand-white hover:bg-brand-orange-600" 
+          : "bg-gradient-to-br from-brand-orange-400 to-brand-orange-500 text-brand-white hover:from-brand-orange-500 hover:to-brand-orange-600"
+      )}
+      style={{
+        width: '100px',
+        height: '100px',
+        boxShadow: '0 10px 25px rgba(255,87,34,0.2)'
+      }}
+    >
+      <div className="flex flex-col items-center justify-center">
+        <AnimatePresence mode="wait">
+          {isVentModeActive ? (
+            <motion.div
+              key="cancel"
+              initial={{ opacity: 0, rotate: -180 }}
+              animate={{ opacity: 1, rotate: 0 }}
+              exit={{ opacity: 0, rotate: 180 }}
+              className="flex flex-col items-center"
             >
-              <FaTrash className="w-4 h-4" />
-            </motion.button>
-          </motion.div>
-        ) : (
-          <motion.div>
-            <motion.button
-              onClick={() => setShowOptions(!showOptions)}
-              className="bg-accent-orange text-white rounded-full p-4 shadow-2xl"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              <FaSkullCrossbones className="text-4xl mb-1 group-hover:animate-spin" />
+              <span className="text-xs font-bold lowercase">abort mission</span>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="start"
+              initial={{ opacity: 0, rotate: 180 }}
+              animate={{ opacity: 1, rotate: 0 }}
+              exit={{ opacity: 0, rotate: -180 }}
+              className="flex flex-col items-center"
             >
-              <FaBolt className="w-6 h-6" />
-            </motion.button>
-
-            {showOptions && (
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                className="absolute bottom-full right-0 mb-4 bg-white/10 backdrop-blur-lg border border-white/10 rounded-2xl p-4 w-64 space-y-4"
-              >
-                <div>
-                  <label className="block text-sm text-white/70 mb-2">Duration</label>
-                  <div className="flex space-x-2">
-                    {durationOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => setSelectedDuration(option.value)}
-                        className={`
-                          px-3 py-1 rounded-full text-sm transition-colors
-                          ${selectedDuration === option.value 
-                            ? 'bg-accent-orange text-white' 
-                            : 'bg-white/10 text-white/70 hover:bg-white/20'}
-                        `}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm text-white/70 mb-2">Anonymity</label>
-                  <div className="flex space-x-2">
-                    {anonymityOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => setSelectedAnonymity(option.value)}
-                        className={`
-                          px-3 py-1 rounded-full text-sm transition-colors flex items-center space-x-2
-                          ${selectedAnonymity === option.value 
-                            ? 'bg-accent-orange text-white' 
-                            : 'bg-white/10 text-white/70 hover:bg-white/20'}
-                        `}
-                      >
-                        {option.label === 'High' && <FaLock className="w-3 h-3" />}
-                        {option.label === 'Medium' && <FaUnlock className="w-3 h-3" />}
-                        <span>{option.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <motion.button
-                  onClick={handleStartVentMode}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-full bg-accent-orange text-white py-2 rounded-lg hover:bg-accent-orange/80 transition-colors"
-                >
-                  Start Vent Mode
-                </motion.button>
-              </motion.div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+              <FaBrain className="text-4xl mb-1 group-hover:animate-pulse" />
+              <span className="text-xs font-bold lowercase">{getRandomSlangPhrase()}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.button>
   );
 }
