@@ -1,0 +1,39 @@
+{
+  "name": "emotional-archive-backend",
+  "version": "1.0.0",
+  "description": "Backend for Emotional Archive Globe Visualization",
+  "main": "server.js",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "lint": "eslint .",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "emotional-archive",
+    "globe-visualization",
+    "real-time",
+    "geolocation"
+  ],
+  "author": "Emotional Archive Team",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "geoip-lite": "^1.4.7",
+    "mongoose": "^7.3.1",
+    "socket.io": "^4.7.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22",
+    "eslint": "^8.44.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/emotional-archive-backend.git"
+  }
+}

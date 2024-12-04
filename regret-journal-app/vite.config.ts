@@ -27,7 +27,10 @@ export default defineConfig(({ mode }) => {
     define: {
       'import.meta.env.VITE_API_BASE_URL': JSON.stringify(env.VITE_API_BASE_URL),
       'import.meta.env.VITE_APP_NAME': JSON.stringify(env.VITE_APP_NAME),
-      'import.meta.env.VITE_APP_VERSION': JSON.stringify(env.VITE_APP_VERSION)
+      'import.meta.env.VITE_APP_VERSION': JSON.stringify(env.VITE_APP_VERSION),
+      'import.meta.env.VITE_SOCKET_SERVER_URL': JSON.stringify(env.VITE_SOCKET_SERVER_URL),
+      'import.meta.env.VITE_ENABLE_GEOLOCATION': JSON.stringify(env.VITE_ENABLE_GEOLOCATION || 'true'),
+      'import.meta.env.VITE_ENABLE_ANONYMOUS_MODE': JSON.stringify(env.VITE_ENABLE_ANONYMOUS_MODE || 'true')
     },
     build: {
       outDir: 'dist',

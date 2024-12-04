@@ -18,6 +18,7 @@ import { VentModeTextArea } from './components/VentMode/VentModeTextArea';
 // Context Imports
 import { StreakProvider } from './contexts/StreakContext';
 import { VentModeProvider } from './contexts/VentModeContext';
+import { GlobalConfessionProvider } from './contexts/GlobalConfessionContext';
 
 function App() {
   console.log('App component rendering...');
@@ -52,44 +53,46 @@ function App() {
     };
 
     return (
-      <StreakProvider>
-        <VentModeProvider>
-          <BrowserRouter>
-            <div className="min-h-screen bg-gradient-to-br from-off-black via-off-black to-accent-orange/20 w-full">
-              {isAuthenticated ? (
-                <>
-                  {/* Navbar with logout functionality and username */}
-                  <Navbar 
-                    username={userProfile?.username || 'User'} 
-                    onLogout={handleLogout} 
-                  />
+      <GlobalConfessionProvider>
+        <StreakProvider>
+          <VentModeProvider>
+            <BrowserRouter>
+              <div className="min-h-screen bg-gradient-to-br from-off-black via-off-black to-accent-orange/20 w-full">
+                {isAuthenticated ? (
+                  <>
+                    {/* Navbar with logout functionality and username */}
+                    <Navbar 
+                      username={userProfile?.username || 'User'} 
+                      onLogout={handleLogout} 
+                    />
 
-                  {/* Main Content Area with Top Padding to Accommodate Navbar */}
-                  <main className="pt-20 min-h-screen">
-                    <Routes>
-                      <Route path="/" element={<HomePage />} />
-                      <Route path="/journal" element={<JournalPage />} />
-                      <Route path="/confessions" element={<ConfessionsPage />} />
-                      <Route path="/chatbot" element={<ChatbotPage />} />
-                      <Route 
-                        path="/profile" 
-                        element={<ProfilePage userProfile={userProfile} />} 
-                      />
-                      <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
-                  </main>
+                    {/* Main Content Area with Top Padding to Accommodate Navbar */}
+                    <main className="pt-20 min-h-screen">
+                      <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/journal" element={<JournalPage />} />
+                        <Route path="/confessions" element={<ConfessionsPage />} />
+                        <Route path="/chatbot" element={<ChatbotPage />} />
+                        <Route 
+                          path="/profile" 
+                          element={<ProfilePage userProfile={userProfile} />} 
+                        />
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                      </Routes>
+                    </main>
 
-                  {/* Vent Mode Components */}
-                  <VentModeButton />
-                  <VentModeTextArea />
-                </>
-              ) : (
-                <AuthPage onAuthenticate={handleAuthentication} />
-              )}
-            </div>
-          </BrowserRouter>
-        </VentModeProvider>
-      </StreakProvider>
+                    {/* Vent Mode Components */}
+                    <VentModeButton />
+                    <VentModeTextArea />
+                  </>
+                ) : (
+                  <AuthPage onAuthenticate={handleAuthentication} />
+                )}
+              </div>
+            </BrowserRouter>
+          </VentModeProvider>
+        </StreakProvider>
+      </GlobalConfessionProvider>
     );
   } catch (error) {
     console.error('Critical error in App component:', error);
