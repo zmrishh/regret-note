@@ -3,52 +3,80 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { confessionService } from '../../services/api';
 import { HoverBorderGradient } from "../ui/hover-border-gradient";
 import { cn } from '@/lib/utils';
+import { useToast } from '../../contexts/ToastContext';
+import { useJournalingMode } from '../../contexts/JournalingModeContext';
 
-const TextJournalMode = ({ onTextChange, mood }) => {
+const TextJournalMode = ({ 
+  onTextChange, 
+  mood = null, 
+  placeholders = [
+    "What's on your mind?",
+    "Write your thoughts freely...",
+    "Today I want to express...",
+    "Let your feelings flow..."
+  ]
+}) => {
   const [journalText, setJournalText] = useState('');
   const [placeholder, setPlaceholder] = useState('');
   const [spiciness, setSpiciness] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState('');
+  const { showToast } = useToast();
+  const { journalingMode } = useJournalingMode();
   const maxChars = 1000;
 
+  const spicinessLevelsRegret = [
+    { level: 1, emoji: '😌', label: 'Mild' },
+    { level: 2, emoji: '😅', label: 'Medium' },
+    { level: 3, emoji: '😰', label: 'Spicy' },
+    { level: 4, emoji: '🤦', label: 'Major Facepalm' },
+  ];
+
+  const spicinessLevelsFine = [
+    { level: 1, emoji: '🌱', label: 'Gentle' },
+    { level: 2, emoji: '🌞', label: 'Bright' },
+    { level: 3, emoji: '🚀', label: 'Inspired' },
+    { level: 4, emoji: '✨', label: 'Radiant' },
+  ];
+
+  const spicinessLevels = journalingMode === 'major-facepalm' 
+    ? spicinessLevelsRegret 
+    : spicinessLevelsFine;
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
-    // Set dynamic placeholder based on mood
-    if (mood === 'regret') {
-      const regretPrompts = [
-        'What moment are you regretting?',
-        'Describe the situation that\'s weighing on you...',
-        'What lesson can you learn from this experience?',
-        'How did this moment make you feel?'
-      ];
-      setPlaceholder(regretPrompts[Math.floor(Math.random() * regretPrompts.length)]);
-    } else {
-      const reflectionPrompts = [
-        'What are you grateful for today?',
-        'Describe a moment that brought you joy...',
-        'What personal growth have you noticed recently?',
-        'How are you feeling in this moment?'
-      ];
-      setPlaceholder(reflectionPrompts[Math.floor(Math.random() * reflectionPrompts.length)]);
-    }
-  }, [mood]);
+    const randomPlaceholder = placeholders[Math.floor(Math.random() * placeholders.length)];
+    setPlaceholder(randomPlaceholder);
+  }, [placeholders]);
+
+  useEffect(() => {
+    onTextChange(journalText);
+  }, [journalText, onTextChange]);
 
   const handleTextChange = (e) => {
     const text = e.target.value;
     if (text.length <= maxChars) {
       setJournalText(text);
-      onTextChange(text);
+    } else {
+      showToast(`Maximum ${maxChars} characters allowed`, 'error', 'bottom-right');
     }
+  };
+
+  const handleSpicinessChange = (level) => {
+    setSpiciness(level);
+    showToast(
+      `Intensity set to ${spicinessLevels.find(s => s.level === level).label}`, 
+      'success', 
+      'bottom-right'
+    );
   };
 
   const handleSubmit = async () => {
     if (!journalText.trim()) {
-      setSubmitMessage('Please enter your thoughts before submitting.');
+      showToast('Please write something before sharing', 'error', 'bottom-right');
       return;
     }
 
     setIsSubmitting(true);
-    setSubmitMessage('');
 
     try {
       const response = await confessionService.create({
@@ -59,23 +87,15 @@ const TextJournalMode = ({ onTextChange, mood }) => {
         isPublic: true
       });
 
-      setSubmitMessage('Confession submitted successfully! 🌈');
+      showToast('Thoughts shared anonymously! 🌈', 'success', 'top');
       setJournalText('');
       onTextChange('');
     } catch (error) {
-      console.error('Submission error:', error);
-      setSubmitMessage('Failed to submit. Please try again.');
+      showToast('Failed to share anonymously. Please try again.', 'error', 'bottom-right');
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const spicinessLevels = [
-    { level: 1, emoji: '😌', label: 'Mild' },
-    { level: 2, emoji: '😅', label: 'Medium' },
-    { level: 3, emoji: '😰', label: 'Spicy' },
-    { level: 4, emoji: '🤦', label: 'Major Facepalm' },
-  ];
 
   const getGradientBySpiciness = (level) => {
     switch(level) {
@@ -97,7 +117,9 @@ const TextJournalMode = ({ onTextChange, mood }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h3 className="text-xl font-medium mb-4 text-white/80">Regret Level</h3>
+          <h3 className="text-xl font-medium mb-4 text-white/80">
+            {journalingMode === 'major-facepalm' ? 'Regret Level' : 'Emotional Intensity'}
+          </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {spicinessLevels.map(({ level, emoji, label }) => (
               <motion.button
@@ -107,7 +129,7 @@ const TextJournalMode = ({ onTextChange, mood }) => {
                     ? 'bg-gradient-to-br ' + getGradientBySpiciness(level)
                     : 'bg-white/5 hover:bg-white/10'
                 } backdrop-blur-sm rounded-xl p-4 border border-white/10 transition-colors`}
-                onClick={() => setSpiciness(level)}
+                onClick={() => handleSpicinessChange(level)}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -209,24 +231,6 @@ const TextJournalMode = ({ onTextChange, mood }) => {
               {isSubmitting ? "Sharing your thoughts..." : "Share Anonymously"}
             </HoverBorderGradient>
           </motion.div>
-
-          {/* Submit Message */}
-          <AnimatePresence>
-            {submitMessage && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className={`mt-4 p-4 rounded-xl text-center
-                  ${submitMessage.includes('successfully') 
-                    ? 'bg-green-500/20 text-green-300' 
-                    : 'bg-red-500/20 text-red-300'
-                  }`}
-              >
-                {submitMessage}
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </motion.div>
     </div>

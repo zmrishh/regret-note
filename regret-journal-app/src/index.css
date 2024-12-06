@@ -18,6 +18,12 @@
 
   --mouse-x: 50%;
   --mouse-y: 50%;
+
+  --color-1: 12 100% 50%;    /* Vibrant Orange-Red */
+  --color-2: 30 100% 50%;    /* Deep Orange */
+  --color-3: 45 100% 50%;    /* Orange-Yellow */
+  --color-4: 20 100% 45%;    /* Burnt Orange */
+  --color-5: 15 100% 55%;    /* Bright Orange */
 }
 
 body {

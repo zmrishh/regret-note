@@ -4,7 +4,16 @@ import { confessionService } from '../../services/api';
 import { HoverBorderGradient } from "../ui/hover-border-gradient";
 import { cn } from '@/lib/utils';
 
-const VoiceJournalMode = ({ onTranscriptChange, mood }) => {
+const VoiceJournalMode = ({ 
+  onTranscriptChange, 
+  mood, 
+  placeholders = [
+    "Tap the mic and speak your mind...",
+    "Voice your thoughts freely...",
+    "Share what's in your heart...",
+    "Let your words flow..."
+  ]
+}) => {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [audioLevel, setAudioLevel] = useState(0);
@@ -15,6 +24,11 @@ const VoiceJournalMode = ({ onTranscriptChange, mood }) => {
   const mediaRecorderRef = useRef(null);
   const recognitionRef = useRef(null);
   const audioRecorderRef = useRef(null);
+
+  useEffect(() => {
+    const randomPlaceholder = placeholders[Math.floor(Math.random() * placeholders.length)];
+    setPlaceholder(randomPlaceholder);
+  }, [placeholders]);
 
   useEffect(() => {
     // Initialize Web Speech API

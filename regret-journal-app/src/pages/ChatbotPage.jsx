@@ -10,6 +10,8 @@ import {
   FaRobot
 } from 'react-icons/fa';
 import { MdEmojiEmotions } from 'react-icons/md';
+import { StarsBackground } from '../components/ui/stars-background';
+import { ShootingStars } from '../components/ui/shooting-stars';
 
 // Vibrant Gen Z Slang and Vibes Bot Responses
 const botResponses = {
@@ -99,124 +101,135 @@ const ChatbotPage = () => {
   };
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-[calc(100vh-theme(spacing.20))] relative w-full p-4 flex items-center justify-center"
+      className="relative min-h-screen bg-black overflow-hidden"
     >
-      <div className="relative z-10 w-full max-w-4xl">
-        {/* Personality Selector */}
-        <motion.div 
-          className="mb-4 flex justify-center space-x-4"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-        >
-          {Object.keys(botResponses).map((personality) => (
-            <motion.button
-              key={personality}
-              onClick={() => changePersonality(personality)}
-              className={`px-4 py-2 rounded-xl text-sm font-subheading 
-                flex items-center gap-2
-                ${botPersonality === personality 
-                  ? 'bg-accent-orange text-white' 
-                  : 'bg-white/10 hover:bg-white/20 text-white/70'
-                }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {personality === 'chaotic' && <FaMagic />}
-              {personality === 'healing' && <FaHeart />}
-              {personality === 'real' && <FaBrain />}
-              {personality.charAt(0).toUpperCase() + personality.slice(1)} Mode
-            </motion.button>
-          ))}
-        </motion.div>
-
-        {/* Chat Container */}
+      <div className="relative z-10 container mx-auto px-4 py-16">
+        <StarsBackground />
+        <ShootingStars />
         <motion.div
-          className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/20 overflow-hidden"
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="min-h-[calc(100vh-theme(spacing.20))] relative w-full p-4 flex items-center justify-center"
         >
-          {/* Header */}
-          <div className="bg-white/5 p-4 flex items-center justify-between border-b border-white/10">
-            <div className="flex items-center space-x-3">
-              <FaRobot className="text-3xl text-accent-orange" />
-              <h2 className="text-xl font-bold text-white">
-                emotional ai companion
-              </h2>
-            </div>
-            <div className="flex items-center space-x-2">
-              <MdEmojiEmotions className="text-yellow-300 text-2xl animate-bounce" />
-              <span className="text-sm text-white/70">
-                {botPersonality} mode
-              </span>
-            </div>
-          </div>
-
-          {/* Messages Area */}
-          <div className="h-[500px] overflow-y-auto p-6 space-y-4">
-            <AnimatePresence>
-              {messages.map((message) => (
-                <motion.div
-                  key={message.id}
-                  initial={{ opacity: 0, x: message.sender === 'user' ? 20 : -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0 }}
-                  className={`flex ${message.sender === 'bot' ? 'justify-start' : 'justify-end'}`}
+          <div className="relative z-10 w-full max-w-4xl">
+            {/* Personality Selector */}
+            <motion.div 
+              className="mb-4 flex justify-center space-x-4"
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+            >
+              {Object.keys(botResponses).map((personality) => (
+                <motion.button
+                  key={personality}
+                  onClick={() => changePersonality(personality)}
+                  className={`px-4 py-2 rounded-xl text-sm font-subheading 
+                    flex items-center gap-2
+                    ${botPersonality === personality 
+                      ? 'bg-accent-orange text-white' 
+                      : 'bg-white/10 hover:bg-white/20 text-white/70'
+                    }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <div 
-                    className={`
-                      max-w-[80%] px-4 py-3 rounded-2xl 
-                      ${message.sender === 'bot' 
-                        ? 'bg-white/10 text-white' 
-                        : 'bg-accent-orange text-black'
-                      }
-                      ${message.personality === 'chaotic' ? 'border-l-4 border-pink-500' 
-                        : message.personality === 'healing' ? 'border-l-4 border-green-500' 
-                        : 'border-l-4 border-blue-500'
-                      }
-                    `}
-                  >
-                    {message.sender === 'bot' && (
-                      <FaStar className="absolute top-1 right-1 text-yellow-300 text-xs animate-pulse" />
-                    )}
-                    <p className="text-sm">{message.text}</p>
-                  </div>
-                </motion.div>
+                  {personality === 'chaotic' && <FaMagic />}
+                  {personality === 'healing' && <FaHeart />}
+                  {personality === 'real' && <FaBrain />}
+                  {personality.charAt(0).toUpperCase() + personality.slice(1)} Mode
+                </motion.button>
               ))}
-            </AnimatePresence>
-            <div ref={messagesEndRef} />
-          </div>
+            </motion.div>
 
-          {/* Input Area */}
-          <div className="border-t border-white/10 p-4 bg-white/5">
-            <div className="flex items-center space-x-2">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder={`slide into my dms in ${botPersonality} mode...`}
-                className="flex-grow bg-black/20 rounded-xl border border-white/10 p-3 
-                           text-white placeholder-white/30 focus:outline-none 
-                           focus:ring-2 focus:ring-accent-orange/50 
-                           transition-all duration-300"
-              />
-              <motion.button
-                onClick={handleSendMessage}
-                className="px-4 py-3 bg-accent-orange/10 text-white 
-                           rounded-xl font-subheading font-bold
-                           flex items-center gap-2
-                           hover:bg-accent-orange/20 
-                           transition-colors"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <FaPaperPlane /> send it
-              </motion.button>
-            </div>
+            {/* Chat Container */}
+            <motion.div
+              className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/20 overflow-hidden"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+            >
+              {/* Header */}
+              <div className="bg-white/5 p-4 flex items-center justify-between border-b border-white/10">
+                <div className="flex items-center space-x-3">
+                  <FaRobot className="text-3xl text-accent-orange" />
+                  <h2 className="text-xl font-bold text-white">
+                    emotional ai companion
+                  </h2>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <MdEmojiEmotions className="text-yellow-300 text-2xl animate-bounce" />
+                  <span className="text-sm text-white/70">
+                    {botPersonality} mode
+                  </span>
+                </div>
+              </div>
+
+              {/* Messages Area */}
+              <div className="h-[500px] overflow-y-auto p-6 space-y-4">
+                <AnimatePresence>
+                  {messages.map((message) => (
+                    <motion.div
+                      key={message.id}
+                      initial={{ opacity: 0, x: message.sender === 'user' ? 20 : -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0 }}
+                      className={`flex ${message.sender === 'bot' ? 'justify-start' : 'justify-end'}`}
+                    >
+                      <div 
+                        className={`
+                          max-w-[80%] px-4 py-3 rounded-2xl 
+                          ${message.sender === 'bot' 
+                            ? 'bg-white/10 text-white' 
+                            : 'bg-accent-orange text-black'
+                          }
+                          ${message.personality === 'chaotic' ? 'border-l-4 border-pink-500' 
+                            : message.personality === 'healing' ? 'border-l-4 border-green-500' 
+                            : 'border-l-4 border-blue-500'
+                          }
+                        `}
+                      >
+                        {message.sender === 'bot' && (
+                          <FaStar className="absolute top-1 right-1 text-yellow-300 text-xs animate-pulse" />
+                        )}
+                        <p className="text-sm">{message.text}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Input Area */}
+              <div className="border-t border-white/10 p-4 bg-white/5">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder={`slide into my dms in ${botPersonality} mode...`}
+                    className="flex-grow bg-black/20 rounded-xl border border-white/10 p-3 
+                               text-white placeholder-white/30 focus:outline-none 
+                               focus:ring-2 focus:ring-accent-orange/50 
+                               transition-all duration-300"
+                  />
+                  <motion.button
+                    onClick={handleSendMessage}
+                    className="px-4 py-3 bg-accent-orange/10 text-white 
+                               rounded-xl font-subheading font-bold
+                               flex items-center gap-2
+                               hover:bg-accent-orange/20 
+                               transition-colors"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <FaPaperPlane /> send it
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </motion.div>
       </div>

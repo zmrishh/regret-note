@@ -27,6 +27,11 @@ export default {
           900: '#B71C1C',
         },
         'brand-white': '#FFFFFF',
+        "color-1": "hsl(var(--color-1))",
+        "color-2": "hsl(var(--color-2))",
+        "color-3": "hsl(var(--color-3))",
+        "color-4": "hsl(var(--color-4))",
+        "color-5": "hsl(var(--color-5))",
       },
       boxShadow: {
         'neon-orange-tr': '3px -3px 10px rgba(255, 107, 53, 0.4), inset 3px -3px 10px rgba(255, 107, 53, 0.2)',
@@ -44,6 +49,7 @@ export default {
         'bounce-slow': 'bounce 2s infinite',
         'pulse-slow': 'pulse 3s infinite',
         'wiggle': 'wiggle 1s ease-in-out infinite',
+        'rainbow': 'rainbow 4s linear infinite',
       },
       keyframes: {
         'gradient-y': {
@@ -87,7 +93,18 @@ export default {
         wiggle: {
           '0%, 100%': { transform: 'rotate(-3deg)' },
           '50%': { transform: 'rotate(3deg)' },
-        }
+        },
+        rainbow: {
+          "0%": { 
+            "background-position": "0% 50%",
+          },
+          "50%": {
+            "background-position": "100% 50%",
+          },
+          "100%": { 
+            "background-position": "0% 50%",
+          }
+        },
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

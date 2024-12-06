@@ -19,6 +19,8 @@ import { VentModeTextArea } from './components/VentMode/VentModeTextArea';
 import { StreakProvider } from './contexts/StreakContext';
 import { VentModeProvider } from './contexts/VentModeContext';
 import { GlobalConfessionProvider } from './contexts/GlobalConfessionContext';
+import { ToastProvider } from './contexts/ToastContext';
+import { JournalingModeProvider } from './contexts/JournalingModeContext';
 
 function App() {
   console.log('App component rendering...');
@@ -56,40 +58,44 @@ function App() {
       <GlobalConfessionProvider>
         <StreakProvider>
           <VentModeProvider>
-            <BrowserRouter>
-              <div className="min-h-screen bg-gradient-to-br from-off-black via-off-black to-accent-orange/20 w-full">
-                {isAuthenticated ? (
-                  <>
-                    {/* Navbar with logout functionality and username */}
-                    <Navbar 
-                      username={userProfile?.username || 'User'} 
-                      onLogout={handleLogout} 
-                    />
-
-                    {/* Main Content Area with Top Padding to Accommodate Navbar */}
-                    <main className="pt-20 min-h-screen">
-                      <Routes>
-                        <Route path="/" element={<HomePage />} />
-                        <Route path="/journal" element={<JournalPage />} />
-                        <Route path="/confessions" element={<ConfessionsPage />} />
-                        <Route path="/chatbot" element={<ChatbotPage />} />
-                        <Route 
-                          path="/profile" 
-                          element={<ProfilePage userProfile={userProfile} />} 
+            <ToastProvider>
+              <JournalingModeProvider>
+                <BrowserRouter>
+                  <div className="min-h-screen">
+                    {isAuthenticated ? (
+                      <>
+                        {/* Navbar with logout functionality and username */}
+                        <Navbar 
+                          username={userProfile?.username || 'User'} 
+                          onLogout={handleLogout} 
                         />
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                      </Routes>
-                    </main>
 
-                    {/* Vent Mode Components */}
-                    <VentModeButton />
-                    <VentModeTextArea />
-                  </>
-                ) : (
-                  <AuthPage onAuthenticate={handleAuthentication} />
-                )}
-              </div>
-            </BrowserRouter>
+                        {/* Main Content Area with Top Padding to Accommodate Navbar */}
+                        <main className="pt-20 min-h-screen">
+                          <Routes>
+                            <Route path="/" element={<HomePage />} />
+                            <Route path="/journal" element={<JournalPage />} />
+                            <Route path="/confessions" element={<ConfessionsPage />} />
+                            <Route path="/chatbot" element={<ChatbotPage />} />
+                            <Route 
+                              path="/profile" 
+                              element={<ProfilePage userProfile={userProfile} />} 
+                            />
+                            <Route path="*" element={<Navigate to="/" replace />} />
+                          </Routes>
+                        </main>
+
+                        {/* Vent Mode Components */}
+                        <VentModeButton />
+                        <VentModeTextArea />
+                      </>
+                    ) : (
+                      <AuthPage onAuthenticate={handleAuthentication} />
+                    )}
+                  </div>
+                </BrowserRouter>
+              </JournalingModeProvider>
+            </ToastProvider>
           </VentModeProvider>
         </StreakProvider>
       </GlobalConfessionProvider>

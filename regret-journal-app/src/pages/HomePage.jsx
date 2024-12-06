@@ -1,144 +1,115 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
-import { 
-  FaStar, 
-  FaMagic, 
-  FaHeartBroken, 
-  FaBrain, 
-  FaMicrophone 
-} from 'react-icons/fa';
-import { 
-  MdEmojiEmotions, 
-  MdSentimentVerySatisfied, 
-  MdSentimentDissatisfied 
-} from 'react-icons/md';
-
-// Gen Z Slang Generator
-const SLANG_GENERATOR = [
-  "no cap, we're healing today 💯",
-  "main character energy activated 🌟",
-  "vibes are immaculate rn 🔥",
-  "living my best emotional journey 💖",
-  "we're not okay, and that's valid 🤷‍♀️"
-];
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { FaPencilAlt, FaMicrophone } from 'react-icons/fa';
+import { StarsBackground } from '../components/ui/stars-background';
+import { ShootingStars } from '../components/ui/shooting-stars';
+import { useJournalingMode } from '../contexts/JournalingModeContext';
+import { BentoCard, BentoGrid } from '../components/ui/bento-grid';
+import { sampleJournalEntries } from '../data/sampleJournalEntries';
 
 const HomePage = () => {
-  const [selectedMood, setSelectedMood] = useState(null);
   const navigate = useNavigate();
+  const { startJournalingMode } = useJournalingMode();
+  const [entries] = useState(sampleJournalEntries);
 
-  // Slang Generator
-  const getRandomSlang = () => {
-    return SLANG_GENERATOR[Math.floor(Math.random() * SLANG_GENERATOR.length)];
+  const handleModeSelect = (mode) => {
+    startJournalingMode(mode);
+    navigate('/journal');
   };
 
-  const handleMoodSelect = (mood) => {
-    setSelectedMood(mood);
+  const getEntryBackground = (entry) => {
+    const modeColors = {
+      'feeling-fine': 'from-green-500/20 to-green-600/20',
+      'major-facepalm': 'from-red-500/20 to-red-600/20'
+    };
+
+    return (
+      <div 
+        className={`
+          absolute inset-0 bg-gradient-to-br ${modeColors[entry.mode]} 
+          opacity-20 transition-all duration-300 group-hover:opacity-40
+        `}
+      />
+    );
   };
 
-  const handleJournalMode = (mode) => {
-    navigate('/journal', { 
-      state: { 
-        mood: selectedMood, 
-        mode: mode 
-      } 
-    });
+  const renderJournalEntries = () => {
+    return entries.map((entry, index) => (
+      <BentoCard
+        key={entry.id}
+        name={`${entry.mode === 'feeling-fine' ? '🌞' : '😖'} ${entry.date}`}
+        description={entry.content}
+        href="/journal"
+        cta="View Entry"
+        Icon={entry.type === 'text' ? FaPencilAlt : FaMicrophone}
+        background={getEntryBackground(entry)}
+        className={`
+          ${index === 0 ? 'lg:row-start-1 lg:row-end-4 lg:col-start-2 lg:col-end-3' : ''}
+          ${index === 1 ? 'lg:col-start-1 lg:col-end-2 lg:row-start-1 lg:row-end-3' : ''}
+          ${index === 2 ? 'lg:col-start-3 lg:col-end-3 lg:row-start-1 lg:row-end-2' : ''}
+          ${index === 3 ? 'lg:col-start-1 lg:col-end-2 lg:row-start-3 lg:row-end-4' : ''}
+          ${index === 4 ? 'lg:col-start-3 lg:col-end-3 lg:row-start-2 lg:row-end-4' : ''}
+        `}
+      />
+    ));
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="min-h-[calc(100vh-theme(spacing.20))] w-full p-4 flex items-center justify-center"
-    >
-      <div className="w-full max-w-4xl">
-        <AnimatePresence mode="wait">
-          {!selectedMood ? (
-            <motion.div
-              key="mood-selection"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="text-center"
-            >
-              <h1 className="text-4xl md:text-5xl font-heading font-bold mb-8 bg-gradient-to-r from-white via-white to-accent-orange bg-clip-text text-transparent">
-                how are we feeling today? 🤔
-              </h1>
-              
-              <div className="flex justify-center space-x-8">
-                <motion.button
-                  onClick={() => handleMoodSelect('regret')}
-                  className="bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl p-8 w-64 transition-all group"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span className="text-6xl mb-4 block group-hover:animate-bounce">😫</span>
-                  <span className="text-xl font-bold text-white">major facepalm</span>
-                  <p className="text-sm text-white/70 mt-2">i have some tea to spill 🫖</p>
-                </motion.button>
-                
-                <motion.button
-                  onClick={() => handleMoodSelect('fine')}
-                  className="bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl p-8 w-64 transition-all group"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span className="text-6xl mb-4 block group-hover:animate-pulse">😎</span>
-                  <span className="text-xl font-bold text-white">vibing rn</span>
-                  <p className="text-sm text-white/70 mt-2">just want to reflect 💭</p>
-                </motion.button>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="mode-selection"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="text-center"
-            >
-              <h1 className="text-4xl md:text-5xl font-heading font-bold mb-8 bg-gradient-to-r from-white via-white to-accent-orange bg-clip-text text-transparent">
-                choose your chaos mode 🌪️
-              </h1>
-              
-              <div className="flex justify-center space-x-8">
-                <motion.button
-                  onClick={() => handleJournalMode('text')}
-                  className="bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl p-8 w-64 transition-all group"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span className="text-6xl mb-4 block group-hover:rotate-12">✍️</span>
-                  <span className="text-xl font-bold text-white">text dump</span>
-                  <p className="text-sm text-white/70 mt-2">unhinged thoughts incoming 🌪️</p>
-                </motion.button>
-                
-                <motion.button
-                  onClick={() => handleJournalMode('voice')}
-                  className="bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl p-8 w-64 transition-all group"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span className="text-6xl mb-4 block group-hover:animate-spin">🎙️</span>
-                  <span className="text-xl font-bold text-white">audio chaos</span>
-                  <p className="text-sm text-white/70 mt-2">scream into the void 😱</p>
-                </motion.button>
-              </div>
-
-              <motion.button
-                onClick={() => setSelectedMood(null)}
-                className="mt-8 text-white/50 hover:text-white transition-colors flex items-center justify-center gap-2 mx-auto"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <FaHeartBroken /> go back and choose another vibe
-              </motion.button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+    <div className="relative w-screen min-h-screen overflow-hidden">
+      {/* Stars Background */}
+      <div className="fixed inset-0 z-0">
+        <StarsBackground />
+        <ShootingStars />
       </div>
-    </motion.div>
+
+      {/* Content Container */}
+      <div className="relative z-10 px-8 py-12">
+        {/* Mode Selection Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12"
+        >
+          <h1 className="text-6xl font-bold text-white mb-12">
+            How are you feeling today? ☕
+          </h1>
+
+          {/* Mode Selection Buttons */}
+          <div className="flex justify-center space-x-8 mb-16">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleModeSelect('feeling-fine')}
+              className="bg-white/10 hover:bg-white/20 text-white px-8 py-6 rounded-xl text-2xl font-bold flex items-center space-x-4 transition-all"
+            >
+              <span>🌞</span>
+              <span>Feeling Fine</span>
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleModeSelect('major-facepalm')}
+              className="bg-white/10 hover:bg-white/20 text-white px-8 py-6 rounded-xl text-2xl font-bold flex items-center space-x-4 transition-all"
+            >
+              <span>😖</span>
+              <span>Major Facepalm</span>
+            </motion.button>
+          </div>
+        </motion.div>
+
+        {/* Journal Entries Bento Grid */}
+        <motion.div 
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <BentoGrid className="lg:grid-rows-3">
+            {renderJournalEntries()}
+          </BentoGrid>
+        </motion.div>
+      </div>
+    </div>
   );
 };
 
