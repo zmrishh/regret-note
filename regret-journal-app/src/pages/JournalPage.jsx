@@ -17,17 +17,35 @@ const JournalPage = () => {
   const { journalingMode, resetJournalingMode } = useJournalingMode();
   const navigate = useNavigate();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!journalContent.trim()) {
       showToast('Please write something before submitting', 'error', 'bottom-right');
       return;
     }
     
     try {
-      // TODO: Implement actual submission logic here
+      const response = await fetch('http://localhost:5000/api/entries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: journalContent,
+          mood: journalingMode,
+          entry_type: mode,
+          intensity: 5, // Default intensity
+          is_anonymous: false
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit entry');
+      }
+
       setIsSubmitted(true);
       showToast('Journal entry saved successfully! ✨', 'success', 'top');
     } catch (error) {
+      console.error('Error submitting entry:', error);
       showToast('Failed to submit. Please try again.', 'error', 'bottom-right');
     }
   };
@@ -40,7 +58,7 @@ const JournalPage = () => {
 
   const handleBack = () => {
     resetJournalingMode();
-    navigate('/');
+    navigate('/', { state: { refresh: true } });
   };
 
   // Determine prompts based on journaling mode
